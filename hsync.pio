@@ -1,0 +1,36 @@
+;
+; Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
+;
+; SPDX-License-Identifier: BSD-3-Clause
+;
+
+
+
+.program hsync
+pull block
+.wrap_target
+mov x, osr
+bitloop:
+    jmp x-- bitloop
+
+    set pins, 0 [31]
+    set pins, 0 [31]
+    set pins, 0 [31]
+
+    set pins, 1 [31]
+    set pins, 1 [14]
+    irq 0
+.wrap           
+
+
+% c-sdk {
+void hsync_program_init(PIO pio, uint sm, uint offset, uint pin) {
+   pio_gpio_init(pio, pin);
+   pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
+   pio_sm_config c = hsync_program_get_default_config(offset);
+   sm_config_set_set_pins(&c, pin, 1);
+   sm_config_set_clkdiv(&c, 5);
+   pio_sm_exec(pio, sm, pio_encode_set(pio_pins, 1));
+   pio_sm_init(pio, sm, offset, &c);
+}
+%}

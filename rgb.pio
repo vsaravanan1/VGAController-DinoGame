@@ -1,0 +1,28 @@
+.program rgb
+pull block
+mov x, osr [3]
+.wrap_target
+set pins, 0
+wait 1 irq 1
+mov y, x [3]
+loop:
+pull block
+out pins, 3 [4]
+out pins, 3 [2]
+jmp y-- loop
+.wrap
+
+
+
+
+% c-sdk {
+void rgb_program_init(PIO pio, uint sm, uint offset, uint pin) {
+   pio_gpio_init(pio, pin);
+   pio_sm_set_consecutive_pindirs(pio, sm, pin, 3, true);
+   pio_sm_config c = rgb_program_get_default_config(offset);
+   sm_config_set_set_pins(&c, pin, 3);
+   sm_config_set_out_pins(&c, pin, 3);
+   sm_config_set_clkdiv(&c, 1);
+   pio_sm_init(pio, sm, offset, &c);
+}
+%}
